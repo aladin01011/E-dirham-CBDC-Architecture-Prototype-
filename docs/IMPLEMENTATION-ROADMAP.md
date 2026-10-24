@@ -1,7 +1,11 @@
 # Digital Dirham: Implementation Roadmap
 
 **Status**: Planning Phase
-**Owner**: BAM Project Management
+**Project Type**: Personal study planning draft
+
+> **Disclaimer**  
+> This roadmap is an independent personal-study scenario derived from publicly available CBDC material.  
+> It is not affiliated with, endorsed by, or owned by Bank Al-Maghrib, and all planning numbers below are illustrative hypotheses unless separately sourced.
 
 ## Executive Summary
 
@@ -12,8 +16,8 @@
 - **Phase 4** (Q3-Q4 2026): Retail Expansion (\$2-3M)
 - **Phase 5** (2027+): Financial Services (\$2-3M/year)
 
-**Total 3-year**: \$13-18M
-**ROI**: 15-30x (\$240-425M annual benefit by Year 3)
+**Total 3-year**: \$13-18M (illustrative planning estimate)
+**ROI (hypothesis)**: 15-30x (illustrative \$240-425M annual benefit estimate by Year 3)
 
 ## Critical Path Items (Do NOW)
 
@@ -242,7 +246,7 @@
 - ✓ 99.99% uptime
 - ✓ <1 second settlement (online)
 - ✓ <0.1% failed transactions
-- ✓ <0.001% double-spend rate
+- ✓ Illustrative low double-spend-rate target
 
 ### February-June 2026 (AGENT NETWORK PHASE)
 
@@ -455,4 +459,4 @@ Contingency (20%)               : \$600K
 
 **Document Version**: 2.0
 **Last Updated**: May 2025
-**Owner**: BAM Project Management
+**Project Type**: Personal study planning draft

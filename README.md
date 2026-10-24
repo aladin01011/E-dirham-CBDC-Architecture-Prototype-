@@ -2,7 +2,11 @@
 
 **Status**: Research & Development (Phase 0: Planning)
 **Last Updated**: May 2025
-**Owner**: Bank Al-Maghrib Research Division
+**Project Type**: Personal study repository
+
+> **Disclaimer**  
+> This repository is an independent personal study inspired by publicly available CBDC research.  
+> It is **not** affiliated with, endorsed by, owned by, or led by Bank Al-Maghrib, and it does not contain confidential Bank Al-Maghrib information.
 
 ## 📌 Quick Links
 
@@ -14,11 +18,11 @@
 
 ## 📋 Executive Summary
 
-Digital Dirham is a central bank digital currency designed specifically for Morocco's financial landscape. It addresses three critical imperatives:
+Digital Dirham is a CBDC architecture study for Morocco's financial landscape. It uses the following **illustrative assumptions** (not verified production statistics in this repository):
 
-1. **50% of Morocco is unbanked** – Living primarily in rural areas with limited connectivity
-2. **\$7B annual diaspora remittances** – Lost to 5-7% fees (Western Union, banks)
-3. **35% lack reliable internet** – Making conventional digital payments impractical
+1. **~50% unbanked assumption** – Used for inclusion-focused scenario planning
+2. **~\$7B annual remittance assumption** – Used for remittance cost modeling
+3. **~35% low-connectivity assumption** – Used to motivate offline-first design
 
 ### Unique Design Features
 
@@ -26,18 +30,18 @@ Digital Dirham is a central bank digital currency designed specifically for Moro
 |---------|----------------|
 | **Offline-first** | Works without internet (USSD, NFC, SE) |
 | **Privacy-tiered** | Anonymous for <500 MAD/day; full audit for compliance |
-| **Multi-layer double-spend prevention** | <0.001% fraud rate (device + cryptographic + central) |
+| **Multi-layer double-spend prevention** | Illustrative low fraud target; Bloom false positives can flag/reject valid tx and require reconciliation |
 | **mBridge integration** | Sub-10-minute diaspora transfers (<0.5% cost) |
 | **Hybrid ledger** | Rust settlement engine + Hyperledger Fabric audit trail |
 
-### Key Metrics (Year 1 Target)
+### Key Metrics (Year 1 Illustrative Targets)
 
-- **5M+ wallets** (12% of population)
-- **1M+ daily active users**
-- **<0.001% fraud/double-spend rate**
-- **<1 second settlement (online); T+24h (offline)**
-- **\$50M+ diaspora volume captured**
-- **99.99% uptime**
+- **5M+ wallets** (12% of population, hypothesis)
+- **1M+ daily active users** (hypothesis)
+- **Low fraud/double-spend rate target** (illustrative)
+- **<1 second settlement (online target); T+24h (offline target)**
+- **\$50M+ diaspora volume captured** (hypothesis)
+- **99.99% uptime target**
 
 ## 🏗️ Architecture Layers
 
@@ -60,7 +64,7 @@ API Layer (Online)
 Settlement Layer
   ├─ Rust Settlement Engine
   ├─ 50K+ TPS throughput
-  ├─ <500 microsecond latency
+  ├─ Sub-millisecond local processing target (lab benchmark)
   └─ Multi-validator consensus (5-of-7)
   
   ↓ Atomic write
@@ -103,7 +107,7 @@ Audit Layer
 ## 📱 Offline Payments (Core Innovation)
 
 ### Problem
-35% of Moroccans live in areas with no reliable internet. Existing CBDC designs assume online connectivity.
+Illustrative assumption: ~35% of Moroccans live in areas with no reliable internet. Existing CBDC designs often assume online connectivity.
 
 ### Solution
 **Offline-first** architecture:
@@ -158,12 +162,12 @@ vs. Bank transfer: 1-3 days, 2-3% fee
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| Settlement | **Rust** | Memory-safe, 50K+ TPS, <500μs latency, no GC |
+| Settlement | **Rust** | Memory-safe, high throughput target, low-latency local processing target, no GC |
 | API Gateway | **Go** | Cloud-native, 1M+ concurrent, simple ops |
 | Ledger | **PostgreSQL** | ACID, 3-AZ replication, pgcrypto, RLS |
 | Audit | **Hyperledger Fabric** | BFT consensus, tamper-proof, proven in Africa |
 | SE Applet | **Java Card** | Standard for SIM, proven (20M+ cards) |
-| Crypto | **Ed25519, RSA, Groth16** | NIST-approved, audited |
+| Crypto | **Ed25519, RSA, Groth16, AES-256-GCM** | Mixed primitives: AES-256-GCM is NIST-standardized; Ed25519 and Groth16 are used separately and are not "NIST-approved" as a pair |
 | Deployment | **Kubernetes** | Auto-scaling, multi-cloud, standard |
 
 ## 📈 Implementation Timeline
@@ -184,7 +188,7 @@ vs. Bank transfer: 1-3 days, 2-3% fee
 ### Phase 3: Diaspora Corridor (Q1-Q2 2026) – \$3-4M
 - mBridge integration
 - 2M diaspora users
-- 10% of annual \$7B remittance volume
+- 10% of annual \$7B remittance volume (illustrative target)
 
 ### Phase 4: Retail Expansion (Q3-Q4 2026) – \$2-3M
 - 50K merchants
@@ -195,8 +199,8 @@ vs. Bank transfer: 1-3 days, 2-3% fee
 - Loans, insurance, savings
 - 10M+ wallets (25% of population)
 
-**Total 3-year**: \$13-18M
-**ROI**: 15-30x (annual benefit: \$240-425M by Year 3)
+**Total 3-year**: \$13-18M (illustrative planning estimate)
+**ROI (hypothesis)**: 15-30x (illustrative annual benefit estimate: \$240-425M by Year 3)
 
 ## 📚 Documentation Structure
 
@@ -263,15 +267,16 @@ stakeholder-comms/         – Executive summaries, parliamentary briefs
 
 ## 📞 Contact
 
-- **Project Lead**: Bank Al-Maghrib Research Division
-- **Repository**: [CBDC-Architecture-Prototype-Bank-Al-Maghrib-](https://github.com/aladin01011/CBDC-Architecture-Prototype-Bank-Al-Maghrib-)
+- **Maintainer**: Personal study by [@aladin01011](https://github.com/aladin01011)
+- **Repository**: [E-dirham-CBDC-Architecture-Prototype-](https://github.com/aladin01011/E-dirham-CBDC-Architecture-Prototype-)
 - **Questions**: Open GitHub Issues
 
 ## 📜 License
 
-**Confidential – Bank Al-Maghrib**
-
-This repository and all related research is confidential intellectual property of Bank Al-Maghrib. Unauthorized distribution is prohibited.
+**Personal-study notice (non-confidential):**  
+This repository is shared for public technical discussion and learning.  
+It does not claim confidential institutional ownership.  
+If you need formal reuse terms, add a dedicated `LICENSE` file in a future update.
 
 ---
 

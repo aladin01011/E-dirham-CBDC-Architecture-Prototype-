@@ -1,7 +1,11 @@
 # Digital Dirham: Technical Architecture (v2.0)
 
 **Status**: Research Phase
-**Owner**: BAM Technical Division
+**Project Type**: Personal study architecture
+
+> **Disclaimer**  
+> This document is part of an independent personal CBDC study based on public sources.  
+> It is not an official Bank Al-Maghrib document and contains no confidential Bank Al-Maghrib information.
 
 ## 1. System Overview
 
@@ -33,7 +37,7 @@
 │  ├─ Detect double-spend (Bloom filter)                   │
 │  ├─ Atomic settlement (UTXO model)                       │
 │  ├─ Throughput: 50K-100K TPS                             │
-│  └─ Latency: <500 microseconds                           │
+│  └─ Latency: sub-millisecond local target (lab scope)    │
 │                                                             │
 │  LAYER 5: LEDGER (PostgreSQL, 3-AZ)                       │
 │  ├─ Primary (Rabat): Canonical state                     │
@@ -42,7 +46,7 @@
 │  └─ Durability: WAL-based, point-in-time recovery       │
 │                                                             │
 │  LAYER 6: AUDIT (Hyperledger Fabric, 7-node)            │
-│  ├─ BFT Consensus (4+ of 7 required)                     │
+│  ├─ BFT Consensus (5 of 7 required)                      │
 │  ├─ Tamper-proof verification                           │
 │  ├─ Latency: 1-3 seconds (async)                        │
 │  └─ Role: Independent oversight                         │
@@ -82,9 +86,9 @@ Free Space                 : ~51KB
 
 **Performance:**
 - Throughput: 50K-100K TPS
-- Latency (P99): <500 microseconds
+- Latency (P99): <500 microseconds for local in-process benchmark path (not WAN end-to-end)
 - Memory: <100MB
-- CPU: <1000 cycles per transaction
+- CPU: hardware-dependent; Ed25519 verification is typically far above 1,000 cycles (benchmark before production claims)
 
 ### 2.3 Go API Gateway
 
@@ -122,7 +126,7 @@ POST   /api/v1/ussd/menu             # USSD gateway
 - 2 Peers (Casablanca + Independent)
 - 2 Peers (Tangier + External)
 
-**Consensus:** BFT (4+ of 7)
+**Consensus:** BFT (5 of 7)
 **Block Time:** 5 seconds
 **Fault Tolerance:** Survives 2 failures
 
@@ -161,12 +165,12 @@ Result:  Local settlement: Instant
 | Layer | Mechanism | Coverage |
 |-------|-----------|----------|
 | 1 | Device-level enforcement | <10% (SE compromise risk) |
-| 2 | Cryptographic nonce | <0.1% (Bloom collision) |
-| 3 | Transaction counter | <0.001% (monotonic violation) |
-| 4 | Bloom filter dedup | <0.01% (false positive) |
+| 2 | Cryptographic nonce | Replay-resistance control (illustrative estimate) |
+| 3 | Transaction counter | Illustrative low violation-rate target (monotonic checks) |
+| 4 | Bloom filter dedup | False positives may temporarily flag/reject honest tx; reconciliation resolves final status |
 | 5 | Balance reconciliation | 100% (post-hoc detection) |
 
-**Combined:** <0.001% undetected double-spend
+**Combined:** Illustrative low undetected double-spend objective; false positives increase rejects/friction, not successful double-spends
 
 ## 5. Cryptographic Algorithms
 
@@ -203,16 +207,16 @@ Result:  Local settlement: Instant
 
 | Metric | Target |
 |--------|--------|
-| Settlement Latency (P99) | <500μs |
+| Settlement Latency (P99) | <500μs local-engine target (excludes cross-AZ/WAN effects) |
 | Throughput (TPS) | 50K+ |
 | API Latency (P99) | <100ms |
 | Database Latency | <50ms |
 | Fabric Block Time | <5s |
-| Uptime | 99.99% |
-| Double-spend Rate | <0.001% |
+| Uptime | 99.99% target |
+| Double-spend Rate | Illustrative low-rate target |
 
 ---
 
 **Document Version**: 2.0
 **Last Updated**: May 2025
-**Owner**: BAM Technical Division
+**Project Type**: Personal study architecture

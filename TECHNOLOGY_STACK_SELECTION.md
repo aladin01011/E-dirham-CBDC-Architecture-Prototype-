@@ -1,5 +1,9 @@
 # Digital Dirham CBDC v2 - Technology Stack Selection & Justification
 
+> **Disclaimer**  
+> This file is part of an independent personal study based on publicly available CBDC resources.  
+> It is not an official Bank Al-Maghrib document and does not rely on confidential institutional information.
+
 ## Executive Summary
 
 The Digital Dirham v2 technology stack balances **security**, **scalability**, **CBDC-specific requirements**, and **Moroccan deployment constraints**. This document provides detailed comparative analysis and final recommendations for each major component.
@@ -43,7 +47,7 @@ The Digital Dirham v2 technology stack balances **security**, **scalability**, *
    - Deterministic latency (critical for T+0 settlement)
    - Predictable resource usage
    - No 50-500ms GC pauses during transaction processing
-   - Result: Sub-millisecond transaction finality achievable
+   - Result: Sub-millisecond local-path transaction finality can be achievable in controlled benchmarks
 
 ✅ Strong Type System
    - Algebraic Data Types (Sum/Product types)
@@ -59,7 +63,7 @@ The Digital Dirham v2 technology stack balances **security**, **scalability**, *
 ##### Performance Characteristics
 - **Memory overhead:** ~0-5% (RAII model)
 - **CPU performance:** Within 10% of C (often faster due to better optimizations)
-- **Latency (p99):** <100μs for typical operation
+- **Latency (p99):** <100μs local-path benchmark target for typical operation
 - **Throughput:** 1M+ operations/second on single core (with async)
 
 ##### CBDC-Specific Strengths
@@ -99,7 +103,7 @@ impl TransactionValidator {
         tx: &SignedTransaction,
     ) -> Result<TransactionReceipt, SettlementError> {
         // Compiler enforces: no data races, no null pointers, no buffer overflows
-        // Runtime: <100μs, no GC pauses
+        // Runtime target (local benchmark): <100μs, no GC pauses
         self.verify_signature(tx)?;
         self.check_balance(tx)?;
         self.update_ledger(tx)?;
@@ -264,7 +268,7 @@ func (gw *APIGateway) HandleTransfer(w http.ResponseWriter, r *http.Request) {
 
 | Service | Rust | Go | Java | Reason |
 |---------|------|-----|------|--------|
-| **Settlement** | ✅✅ | ❌ | ❌ | Needs <100μs latency, no GC |
+| **Settlement** | ✅✅ | ❌ | ❌ | Needs low-latency local-path execution, no GC |
 | **Consensus Coord** | ✅✅ | ✅ | ❌ | Rust for cryptography, Go ok for orchestration |
 | **API Gateway** | ❌ | ✅✅ | ✅ | I/O bound, goroutines ideal, Go simpler |
 | **Identity Verify** | ✅ | ✅✅ | ✅ | Rust for biometric processing, Go for API routing |
@@ -610,7 +614,7 @@ PRIMARY STACK:
          ┌─────────────────────────────────────┐
          │   Centralized Rust Settlement       │
          │   (PRIMARY LEDGER - Core)           │
-         │   ├─ <500 microsecond latency      │
+         │   ├─ Sub-ms local processing target │
          │   ├─ 50,000+ TPS throughput        │
          │   ├─ State: UTXO + Account Model   │
          │   ├─ Merkle tree commitments       │
@@ -625,7 +629,7 @@ PRIMARY STACK:
          │  ├─ 1-3 second latency                  │
          │  ├─ 5,000-10,000 TPS                    │
          │  ├─ Cryptographic tamper-proofs         │
-         │  ├─ BFT consensus (7 nodes)             │
+         │  ├─ BFT consensus (7 nodes, 5-of-7 quorum) │
          │  ├─ Independent verification            │
          │  └─ Regulatory audit compliance         │
          └─────────────────────────────────────────┘
@@ -794,7 +798,7 @@ impl SettlementLedger {
 ```
 
 **Properties:**
-- Latency: <500 microseconds from transaction submission to ledger commitment
+- Latency: sub-millisecond is a local-engine benchmark target; end-to-end latency is topology-dependent and higher with cross-AZ sync/WAN
 - Throughput: 50,000+ TPS (batched blocks, not individual transactions)
 - Durability: WAL-based (synchronous to disk)
 - Availability: Quorum of 5-of-7 validators (any 2 nodes can fail)
@@ -825,7 +829,7 @@ type AuditRecord struct {
     Timestamp    int64  `json:"timestamp"`
 }
 
-// RecordSettlementBlock is called by BAM's audit daemon
+// RecordSettlementBlock is called by the audit ingestion daemon
 // It receives settlement blocks from Rust ledger and records immutably on Fabric
 func (s *SettlementAudit) RecordSettlementBlock(
     ctx contractapi.TransactionContextInterface,
@@ -920,12 +924,12 @@ T+2025-05-31: Auditor queries
 │  ├─ State machine (UTXO model)                        │
 │  ├─ Persistent storage (PostgreSQL + WAL)             │
 │  ├─ Quorum signing (5-of-7 validators)                │
-│  └─ SLA: <500μs latency, 50K+ TPS                    │
+│  └─ SLA target: <500μs local processing, 50K+ TPS    │
 │                                                         │
 │  AUDIT LAYER: Hyperledger Fabric (Go Chaincode)       │
 │  ├─ Independent verification                          │
 │  ├─ Tamper-proof record                               │
-│  ├─ BFT consensus (7 nodes)                           │
+│  ├─ BFT consensus (7 nodes, 5-of-7 quorum)           │
 │  ├─ Async write (1-3s lag acceptable)                │
 │  └─ Regulatory compliance                             │
 │                                                         │
@@ -1019,7 +1023,7 @@ Rust Settlement Commit (PostgreSQL)
     ↓
 PostgreSQL + Rust Ledger
     • Primary commitment
-    • <500 microsecond latency
+    • Sub-millisecond local processing target
     ↓
 Generate Finality Receipt (Rust)
     • Sign by quorum
@@ -1047,7 +1051,7 @@ Immutable Audit Trail (Fabric Ledger)
 ### Security
 - ✅ **Rust** = Memory-safe settlement (no buffer overflows, no use-after-free)
 - ✅ **PostgreSQL** = ACID transactions (all-or-nothing, no partial updates)
-- ✅ **Fabric** = Independent verification layer (BAM cannot modify transactions)
+- ✅ **Fabric** = Independent verification layer (tampering is externally detectable)
 - ✅ **Cryptography** = Ed25519, Groth16 zk-SNARKs, AES-256-GCM
 
 ### Scalability
@@ -1057,7 +1061,7 @@ Immutable Audit Trail (Fabric Ledger)
 - ✅ **Kubernetes** = Auto-scale to 100+ pods based on load
 
 ### CBDC Requirements
-- ✅ **Sub-millisecond settlement** (Rust latency)
+- ✅ **Sub-millisecond local-path settlement target** (Rust latency profile)
 - ✅ **High throughput** (Batching + async Fabric)
 - ✅ **Offline support** (Rust's efficiency enables SE-friendly design)
 - ✅ **Privacy** (Rust cryptography, ZKP proving)
@@ -1067,7 +1071,7 @@ Immutable Audit Trail (Fabric Ledger)
 - ✅ **Infrastructure** = Minimal (Rust binaries run on low-spec servers)
 - ✅ **Skill set** = Go known in Moroccan tech community
 - ✅ **Operational simplicity** = Go for ops, Rust for core; clear separation
-- ✅ **Disaster recovery** = PostgreSQL failover is standard (BAM understands this)
+- ✅ **Disaster recovery** = PostgreSQL failover is standard and operationally mature
 - ✅ **Cost** = OSS technologies (PostgreSQL, Hyperledger Fabric, Rust, Go are free)
 
 ---
@@ -1086,7 +1090,7 @@ Immutable Audit Trail (Fabric Ledger)
 │  │  └─ 16 cores, 64GB RAM, NVMe SSD 1TB              │
 │  ├─ PostgreSQL Primary                                │
 │  │  └─ 32 cores, 256GB RAM, NVMe SSD 4TB             │
-│  ├─ Fabric Peer (BAM)                                │
+│  ├─ Fabric Peer (Operator)                           │
 │  │  └─ 8 cores, 32GB RAM, SSD 500GB                   │
 │  └─ Total: ~16TB storage, ~350GB RAM                 │
 │                                                        │
@@ -1126,7 +1130,7 @@ Immutable Audit Trail (Fabric Ledger)
 
 ```
 SETTLEMENT LAYER (Rust)
-├─ Latency: P50 <100μs, P99 <500μs
+├─ Latency targets (local path): P50 <100μs, P99 <500μs
 ├─ Throughput: 50,000 TPS sustained
 ├─ Error rate: <0.001%
 └─ Availability: 99.999% (5 nines)
@@ -1309,7 +1313,7 @@ PHASE 5: National Rollout (Months 25-36)
 
 | Technology | Selected | Justification | Alternative | Why Not |
 |-----------|----------|---|---|---|
-| **Rust** | ✅ (80%) | Memory-safe settlement, <100μs latency, no GC | Go, Java | GC pauses unacceptable for settlement |
+| **Rust** | ✅ (80%) | Memory-safe settlement, low-latency local-path target, no GC | Go, Java | GC pauses unacceptable for settlement |
 | **Go** | ✅ (15%) | Cloud-native, goroutines for I/O, simple ops | Java, Node.js | Simpler than Java, faster than Node.js |
 | **PostgreSQL** | ✅ Primary | ACID, pgcrypto, RLS, proven at scale | CockroachDB | Sufficient for 3-AZ, lower complexity |
 | **Fabric** | ✅ Audit | BFT verification, regulatory trust, proven (eNaira) | Solo, Besu | Audit layer, not replacing Rust for performance |
@@ -1328,8 +1332,7 @@ The **Digital Dirham v2 technology stack** is optimized for:
 
 1. **SECURITY**: Rust for memory safety + Fabric for verification + cryptography throughout
 2. **SCALABILITY**: 50K+ TPS (Rust), 100K+ concurrent (Go), 10-year retention (PostgreSQL)
-3. **CBDC REQUIREMENTS**: Sub-millisecond settlement, offline support, privacy-preserving compliance
+3. **CBDC REQUIREMENTS**: Low-latency settlement targets, offline support, privacy-preserving compliance
 4. **MOROCCAN DEPLOYMENT**: Minimal infrastructure, clear operational model, proven technologies
 
-This stack enables **Bank Al-Maghrib to deploy a world-class CBDC that is secure, scalable, compliant, and suitable for Morocco's financial landscape and technical capabilities.**
-
+This stack is an illustrative reference architecture that could be adapted by a central bank (including Morocco-focused scenarios) for secure and scalable CBDC design.
