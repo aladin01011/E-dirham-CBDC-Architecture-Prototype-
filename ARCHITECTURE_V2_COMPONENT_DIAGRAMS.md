@@ -4,6 +4,9 @@
 
 This document contains comprehensive Mermaid diagrams showing the Digital Dirham v2 architecture with all services, APIs, databases, message queues, and data flows.
 
+> **Disclaimer**  
+> This is a personal-study architecture artifact based on publicly available CBDC references. It is not an official Bank Al-Maghrib document and contains no confidential institutional information.
+
 ---
 
 ## DIAGRAM 1: System Context (High-Level)
@@ -21,7 +24,7 @@ graph TB
         mBRIDGE["🌍 Project mBridge (Cross-Border)"]
     end
 
-    subgraph BAM_CBDC["🏛️ Bank Al-Maghrib CBDC Platform"]
+    subgraph BAM_CBDC["🏛️ Morocco CBDC Platform (Study Scenario)"]
         API_GATEWAY["API Gateway Layer"]
         CORE_SERVICES["Core Services (All 8 Layers)"]
         DATABASES["Persistent Storage"]
@@ -58,7 +61,7 @@ graph TB
 
     subgraph L2["LAYER 2: SETTLEMENT LAYER"]
         TX_VALIDATOR["Transaction Validator"]
-        CONSENSUS["Consensus Engine<br/>(7-node BFT)"]
+        CONSENSUS["Consensus Engine<br/>(7-node BFT, 5-of-7 quorum)"]
         LEDGER_MGR["Ledger Manager<br/>(Hyperledger Fabric)"]
         FINALITY["Finality Service"]
     end
@@ -207,7 +210,7 @@ graph TB
         direction TB
         
         TX_VALIDATOR["Transaction Validator<br/>Rust Service"]
-        CONSENSUS["Consensus Engine<br/>7-node BFT<br/>(Hyperledger Fabric)"]
+        CONSENSUS["Consensus Engine<br/>7-node BFT<br/>(5-of-7 quorum, Hyperledger Fabric)"]
         LEDGER_MGR["Ledger Manager<br/>(UTXO + Account)"]
         FINALITY_SVC["Finality Service<br/>Receipt Generator"]
     end
@@ -566,7 +569,7 @@ graph TB
         SE_MGR["Secure Element Manager<br/>Hardware-backed Key Storage"]
         OFFLINE_LEDGER["Offline Ledger Cache<br/>Merkle Root + Bloom Filter"]
         SYNC_ENGINE["Sync Engine<br/>Reconciliation Protocol"]
-        DOUBLESPEND["Double-Spend Detector<br/>Bloom Filter Clash"]
+        DOUBLESPEND["Double-Spend Detector<br/>Duplicate + Bloom-Flag Review"]
     end
 
     subgraph OFFLINE_DEVICE["Mobile Device (SE-backed)"]
@@ -931,7 +934,7 @@ graph LR
 
     subgraph TIER2["Settlement"]
         VALIDATE["Validate Signature<br/>Check Balance<br/>(Layer 2)"]
-        CONSENSUS["BFT Consensus<br/>(7-node)"]
+        CONSENSUS["BFT Consensus<br/>(7-node, 5-of-7 quorum)"]
         LEDGER_UPDATE["Update Ledger<br/>(Fabric)"]
         FINALITY["Generate Finality Receipt<br/>(Layer 2)"]
     end
@@ -1152,7 +1155,7 @@ graph TB
 
     subgraph RECEIVER["Receiver (Merchant)"]
         RECV_VERIFY["Merchant SE Verifies:<br/>- Signature (Ed25519)<br/>- Amount (< limit)<br/>- Nonce (not replayed)"]
-        RECV_BLOOM["Merchant SE Checks<br/>Bloom Filter:<br/>- Has this token been spent?<br/>- (Very Low FP Rate)"]
+        RECV_BLOOM["Merchant SE Checks<br/>Bloom Filter:<br/>- Has this token been spent?<br/>- False positives may flag honest tx"]
         RECV_ACCEPT["SE Marks Received:<br/>- Token in Received Cache<br/>- Tx in Local Log<br/>- User Gets Receipt<br/>(Can Print QR)"]
     end
 
